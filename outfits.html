@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Outfits | DressSmart AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caramel&family=DM+Serif+Display&family=Quicksand:wght@500&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Quicksand', sans-serif; margin: 0; background-color: #fce4ec; color: #3b3b3b; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background-color: #fff1f6; border-bottom: 1px solid #e6b6c6; }
+    .logo { display: flex; align-items: center; }
+    .logo img { height: 72px; margin-right: 6px; }
+    .logo span { font-family: 'Caramel', cursive; font-size: 3rem; color: #8c5c74; }
+    .nav { display: flex; gap: 1rem; }
+    .nav a { text-decoration: none; font-weight: bold; padding: 0.6rem 1.2rem; border-radius: 16px; color: #8c5c74; }
+    .nav a.active { background-color: #e89cb7; color: white; }
+    .container { max-width: 1000px; margin: 2rem auto; text-align: center; }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 2rem; color: #5e4b5c; margin-bottom: 1rem; }
+    .description { font-size: 1.1rem; max-width: 800px; margin: 1rem auto 2rem; color: #6d4b5d; }
+    .outfit-wrapper { display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 2rem; background-color: #fff; padding: 2rem; border-radius: 20px; box-shadow: 0 6px 14px rgba(0,0,0,0.1); }
+    .outfit { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; }
+    .outfit img { width: 200px; height: 280px; object-fit: cover; border-radius: 14px; border: 2px solid #ddd; }
+    .controls { display: flex; gap: 2rem; margin-top: 1.5rem; }
+    .controls button { background-color: #fff; color: #a25b7c; border: 2px solid #a25b7c; padding: 1rem 2.5rem; font-size: 1.2rem; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s ease; }
+    .controls button:hover { background-color: #a25b7c; color: white; }
+    .favorites-toggle { display: inline-block; margin-top: 3rem; background: #a25b7c; color: white; padding: 0.8rem 1.6rem; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; border: none; }
+    #favoritesContainer { margin-top: 3rem; padding-top: 2rem; }
+    .favorite-block { position: relative; background: #fff6fa; border: 2px dashed #a25b7c; padding: 1rem; margin-bottom: 2rem; border-radius: 12px; }
+    .favorite-block h4 { margin-bottom: 1rem; color: #843b62; }
+    .delete-btn { position: absolute; top: 10px; right: 10px; background: transparent; color: #a25b7c; border: none; font-size: 1.5rem; font-weight: bold; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="image.png" alt="Wardrobe icon">
+      <span>DressSmart AI</span>
+    </div>
+    <div class="nav">
+      <a href="upload.html">Upload</a>
+      <a href="wardrobe.html">Wardrobe</a>
+      <a href="outfits.html" class="active">Outfits</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <h2>Swipe Your Capsule Outfits</h2>
+    <p class="description">Our AI curates outfits from your wardrobe based on color theory, silhouette matching, and current fashion trends. Swipe through looks and save your favorites!</p>
+    <div class="outfit-wrapper">
+      <div id="outfitContainer"></div>
+      <div class="controls">
+        <button onclick="rejectOutfit()">👎 Not my vibe</button>
+        <button onclick="openModal()">💖 Love this!</button>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 3rem;">
+  <button class="favorites-toggle" onclick="scrollToFavorites()">❤️ My Favorite Looks</button>
+  <button class="favorites-toggle" style="background: #d48fb4;" onclick="alert('Coming soon: Create your own collection of saved outfits!')">➕ Add Collection</button>
+</div>
+    <div id="favoritesContainer"></div>
+  </div>
+
+  <div id="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.4);">
+    <div style="background:#fff6fa; padding:2rem; border-radius:12px; max-width:400px; margin:10% auto; text-align:center; border:2px solid #a25b7c;">
+      <h3 style="color:#843b62">Name this look</h3>
+      <input id="lookName" type="text" placeholder="e.g. Paris Café" style="padding:0.5rem; width:80%; border-radius:8px; border:1px solid #ccc;"><br><br>
+      <button onclick="submitLookName()" style="background:#a25b7c; color:white; padding:0.6rem 1.2rem; border:none; border-radius:8px; font-weight:bold;">Save</button>
+      <button onclick="closeModal()" style="margin-left:1rem; background:transparent; color:#a25b7c; border:2px solid #a25b7c; padding:0.6rem 1.2rem; border-radius:8px; font-weight:bold;">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    const items = JSON.parse(localStorage.getItem('wardrobeItems')) || [];
+    let outfitQueue = [];
+    let currentOutfitIndex = 0;
+    const favorites = [];
+
+    function shuffle(arr) {
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    function generateOutfits() {
+      const tops = items.filter(i => i.category === 'Top');
+      const bottoms = items.filter(i => i.category === 'Bottom');
+      const outerwear = items.filter(i => ['Outerwear', 'Jacket', 'Coat'].includes(i.category));
+      const dresses = items.filter(i => i.category === 'Dress');
+      const outfits = [];
+      if (tops.length && bottoms.length && outerwear.length) {
+        outfits.push([shuffle(tops)[0], shuffle(bottoms)[0], shuffle(outerwear)[0]]);
+      }
+      if (dresses.length && outerwear.length) {
+        outfits.push([shuffle(dresses)[0], shuffle(outerwear)[0]]);
+      }
+      return outfits;
+    }
+
+    function renderOutfit(outfit) {
+      const container = document.getElementById('outfitContainer');
+      container.innerHTML = '';
+      const div = document.createElement('div');
+      div.className = 'outfit';
+      outfit.forEach(item => {
+        const img = document.createElement('img');
+        img.src = item.image;
+        img.alt = item.category;
+        div.appendChild(img);
+      });
+      container.appendChild(div);
+    }
+
+    function openModal() {
+      document.getElementById('modal').style.display = 'block';
+      document.getElementById('lookName').value = '';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    function submitLookName() {
+      const name = document.getElementById('lookName').value.trim();
+      if (!name) return;
+      const outfit = outfitQueue[currentOutfitIndex];
+      favorites.push({ name, outfit });
+      renderFavorites();
+      nextOutfit();
+      closeModal();
+    }
+
+    function rejectOutfit() {
+      nextOutfit();
+    }
+
+    function nextOutfit() {
+      currentOutfitIndex++;
+      if (currentOutfitIndex >= outfitQueue.length) {
+        outfitQueue = generateOutfits();
+        currentOutfitIndex = 0;
+      }
+      if (outfitQueue.length > 0) {
+        renderOutfit(outfitQueue[currentOutfitIndex]);
+      }
+    }
+
+    function deleteFavorite(index) {
+      favorites.splice(index, 1);
+      renderFavorites();
+    }
+
+    function renderFavorites() {
+      const container = document.getElementById('favoritesContainer');
+      container.innerHTML = '<h3 style="color:#5e4b5c;">❤️ Your Favorite Looks</h3>';
+      favorites.forEach((fav, index) => {
+        const block = document.createElement('div');
+        block.className = 'favorite-block';
+        const title = document.createElement('h4');
+        title.textContent = fav.name;
+        const close = document.createElement('button');
+        close.className = 'delete-btn';
+        close.innerHTML = '&times;';
+        close.onclick = () => deleteFavorite(index);
+        block.appendChild(close);
+        block.appendChild(title);
+        fav.outfit.forEach(item => {
+          const img = document.createElement('img');
+          img.src = item.image;
+          img.alt = item.category;
+          img.style.width = '140px';
+          img.style.height = '200px';
+          img.style.margin = '0.5rem';
+          img.style.borderRadius = '12px';
+          img.style.border = '1px solid #ddd';
+          block.appendChild(img);
+        });
+        container.appendChild(block);
+      });
+    }
+
+    function scrollToFavorites() {
+      document.getElementById('favoritesContainer').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    outfitQueue = generateOutfits();
+    if (outfitQueue.length > 0) renderOutfit(outfitQueue[currentOutfitIndex]);
+  </script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Upload | DressSmart AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caramel&family=Caveat:wght@600&family=DM+Serif+Display&family=Quicksand:wght@500&family=Playfair+Display&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      margin: 0;
+      background-color: #fce4ec;
+      color: #3b3b3b;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: #fff1f6;
+      border-bottom: 1px solid #e6b6c6;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+    .logo img {
+      height: 72px;
+      margin-right: 6px;
+    }
+    .logo span {
+      font-family: 'Caramel', cursive;
+      font-size: 3rem;
+      color: #8c5c74;
+    }
+    .nav {
+      display: flex;
+      gap: 1rem;
+    }
+    .nav a {
+      text-decoration: none;
+      font-weight: bold;
+      padding: 0.6rem 1.2rem;
+      border-radius: 16px;
+      color: #8c5c74;
+    }
+    .nav a.active {
+      background-color: #e89cb7;
+      color: white;
+    }
+    .container {
+      max-width: 800px;
+      margin: 3rem auto;
+      text-align: center;
+    }
+    .tagline {
+      font-size: 2.8rem;
+      font-style: italic;
+      font-weight: bold;
+      margin-top: 0;
+      margin-bottom: 5rem;
+      font-family: 'DM Serif Display', serif;
+      color: #843b62;
+      height: 2rem;
+      min-height: 2rem;
+    }
+    .upload-box {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #5e4b5c;
+    }
+    .intro-text {
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+      color: #000000;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+    }
+    .form-block {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    textarea {
+      width: 100%;
+      height: 80px;
+      padding: 1rem;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      background-color: #fff8fb;
+      font-family: 'Quicksand', sans-serif;
+    }
+    button {
+      margin: 0.5rem 0.5rem;
+      background-color: #c97c9c;
+      color: white;
+      border: none;
+      padding: 0.9rem 1.5rem;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background-color: #a25b7c;
+    }
+    #cursor {
+      display: inline-block;
+      animation: blink 1s step-start infinite;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="image.png" alt="Wardrobe icon">
+      <span>DressSmart AI</span>
+    </div>
+    <div class="nav">
+      <a href="upload.html" class="active">Upload</a>
+      <a href="wardrobe.html">Wardrobe</a>
+      <a href="outfits.html">Outfits</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="tagline" id="tagline"><span id="cursor">|</span></div>
+    <div class="upload-box">
+      <h2>Add Clothing Links</h2>
+      <p class="intro-text">
+        Found something cute online? Upload the link to a clothing item — whether it’s something you own or want to purchase from <strong>Zara</strong> or <strong>Mango</strong>.<br><br>
+        <strong>We’ll help you turn it into a <span style="color:#a25b7c; font-weight: 600; background-color: #fce4f1; padding: 0 4px; border-radius: 4px;">cohesive capsule wardrobe</span> and assign <span style="color:#a25b7c; font-weight: 600; background-color: #fce4f1; padding: 0 4px; border-radius: 4px;">sustainability scores</span> to each item.</strong>
+      </p>
+      <div class="form-block">
+        <textarea id="pinImages" placeholder="https://..."></textarea>
+        <button onclick="importFromLinks()">Add to Wardrobe</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const items = JSON.parse(localStorage.getItem('wardrobeItems')) || [];
+
+    function fetchProductData(url) {
+      return fetch(`http://localhost:3000/api/scrape?url=${encodeURIComponent(url)}`)
+        .then(res => res.json())
+        .catch(err => {
+          console.error("Failed to fetch product data", err);
+          return { image: '', materials: 'Unknown' };
+        });
+    }
+
+    function calculateSustainabilityScore(materialText) {
+      const materials = materialText.toLowerCase();
+      let score = 50;
+      if (materials.includes('organic cotton')) score += 25;
+      if (materials.includes('recycled')) score += 20;
+      if (materials.includes('wool')) score += 15;
+      if (materials.includes('cotton')) score += 10;
+      if (materials.includes('polyester')) score -= 10;
+      if (materials.includes('acrylic') || materials.includes('nylon')) score -= 15;
+      return Math.max(0, Math.min(100, score));
+    }
+
+    async function importFromLinks() {
+      const textarea = document.getElementById('pinImages');
+      const url = textarea.value.trim();
+      if (!url) {
+        alert('Please paste a valid clothing link.');
+        return;
+      }
+
+      if (!url.includes('zara.com') && !url.includes('mango.com')) {
+        alert('❌ Only links from Zara or Mango are supported right now.');
+        return;
+      }
+
+      const scraped = await fetchProductData(url);
+      console.log("✅ Scraped data:", scraped);
+
+      if (!scraped.image || !scraped.image.startsWith('http')) {
+        alert("⚠️ Couldn't extract a valid image from the link. Try a different one.");
+        return;
+      }
+
+      const item = {
+        category: ['Shoes', 'Dress', 'Jacket', 'Bag', 'Pants', 'Blouse', 'Jeans', 'Coat', 'T-Shirt', 'Jumpsuit', 'Blazer', 'Vest'][items.length % 9],
+        material: scraped.materials || 'Other',
+        sustainabilityScore: calculateSustainabilityScore(scraped.materials || ''),
+        image: scraped.image
+      };
+
+      items.push(item);
+      localStorage.setItem('wardrobeItems', JSON.stringify(items));
+      textarea.value = '';
+
+      const notification = document.createElement('div');
+      notification.textContent = '✓ Item added to your wardrobe!';
+      notification.style.position = 'fixed';
+      notification.style.top = '20px';
+      notification.style.left = '50%';
+      notification.style.transform = 'translateX(-50%)';
+      notification.style.backgroundColor = '#a25b7c';
+      notification.style.color = 'white';
+      notification.style.padding = '1rem 2rem';
+      notification.style.borderRadius = '8px';
+      notification.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.2)';
+      notification.style.zIndex = '999';
+      document.body.appendChild(notification);
+      setTimeout(() => notification.remove(), 2500);
+    }
+
+    const tagline = document.getElementById("tagline");
+    const phrases = ["Stylish.", "Simple.", "Smart."];
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+
+    function typeEffect() {
+      const currentPhrase = phrases[phraseIndex];
+      const text = currentPhrase.substring(0, charIndex);
+      tagline.innerHTML = text + '<span id="cursor">|</span>';
+
+      if (!isDeleting && charIndex < currentPhrase.length) {
+        charIndex++;
+        setTimeout(typeEffect, 100);
+      } else if (isDeleting && charIndex > 0) {
+        charIndex--;
+        setTimeout(typeEffect, 50);
+      } else {
+        isDeleting = !isDeleting;
+        if (!isDeleting) {
+          phraseIndex = (phraseIndex + 1) % phrases.length;
+        }
+        setTimeout(typeEffect, 1000);
+      }
+    }
+
+    typeEffect();
+  </script>
+</body>
+</html>

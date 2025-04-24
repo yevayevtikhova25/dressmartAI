@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wardrobe | DressSmart AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caramel&family=DM+Serif+Display&family=Quicksand:wght@500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      margin: 0;
+      background-color: #fce4ec;
+      color: #3b3b3b;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: #fff1f6;
+      border-bottom: 1px solid #e6b6c6;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+    .logo img {
+      height: 72px;
+      margin-right: 6px;
+    }
+    .logo span {
+      font-family: 'Caramel', cursive;
+      font-size: 3rem;
+      color: #8c5c74;
+    }
+    .nav {
+      display: flex;
+      gap: 1rem;
+    }
+    .nav a {
+      text-decoration: none;
+      font-weight: bold;
+      padding: 0.6rem 1.2rem;
+      border-radius: 16px;
+      color: #8c5c74;
+    }
+    .nav a.active {
+      background-color: #e89cb7;
+      color: white;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      text-align: center;
+    }
+    h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2rem;
+      color: #5e4b5c;
+      margin-bottom: 0.5rem;
+    }
+    .average-score {
+      font-size: 1.6rem;
+      margin: 0 auto 1.2rem;
+      background-color: #fff6fa;
+      padding: 1.4rem 2rem;
+      border-radius: 12px;
+      display: inline-block;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      font-weight: bold;
+      color: #5e4b5c;
+    }
+    .average-score .highlight {
+      color: #a25b7c;
+      font-weight: bold;
+    }
+    .average-score small {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: normal;
+      color: #6c4b57;
+      margin-top: 0.4rem;
+    }
+    .progress-container {
+      margin: 0.5rem auto 1.5rem;
+      background-color: #f0cadd;
+      border-radius: 20px;
+      height: 20px;
+      width: 300px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background-color: #a25b7c;
+      border-radius: 20px 0 0 20px;
+      width: 0%;
+      transition: width 0.4s ease-in-out;
+    }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .card {
+      width: 220px;
+      min-height: 450px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 0.8rem;
+      margin: 0.5rem;
+      background-color: #fff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      text-align: left;
+      position: relative;
+      transition: background-color 0.3s ease;
+    }
+    .card.green {
+      background-color: #d1f0d3;
+    }
+    .card.low-score {
+      background-color: #ffd6d6;
+      border: 1px solid #e55353;
+    }
+    .card img {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .delete-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background-color: #e89cb7;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .label {
+      font-weight: bold;
+      color: #5e4b5c;
+      display: inline;
+      margin-right: 4px;
+    }
+    .value {
+      color: #843b62;
+      font-weight: 600;
+      display: inline;
+    }
+    select.category-select {
+      margin-left: 5px;
+      padding: 0.2rem;
+      border-radius: 6px;
+      font-family: 'Quicksand', sans-serif;
+    }
+    .score-warning {
+      color: #d63447;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-left: 6px;
+      display: inline-block;
+      cursor: help;
+      position: relative;
+    }
+    .tooltip-text {
+      visibility: hidden;
+      width: 280px;
+      background-color: #fff1f1;
+      color: #d63447;
+      text-align: left;
+      border-radius: 8px;
+      padding: 0.8rem;
+      position: absolute;
+      z-index: 1;
+      bottom: 140%;
+      left: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    .score-warning:hover .tooltip-text {
+      visibility: visible;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="image.png" alt="Wardrobe icon">
+      <span>DressSmart AI</span>
+    </div>
+    <div class="nav">
+      <a href="upload.html">Upload</a>
+      <a href="wardrobe.html" class="active">Wardrobe</a>
+      <a href="outfits.html">Outfits</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <h2>Your Wardrobe</h2>
+    <div id="avgScore" class="average-score"></div>
+    <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="grid" id="wardrobeItems"></div>
+  </div>
+
+  <script>
+    let items = JSON.parse(localStorage.getItem('wardrobeItems')) || [];
+
+    const materialScores = {
+      'cotton': 80,
+      'organic cotton': 95,
+      'recycled polyester': 70,
+      'polyester': 40,
+      'virgin polyester': 40,
+      'elastane': 20,
+      'hemp': 92,
+      'viscose': 45,
+      'nylon': 30
+    };
+
+    const warningMessages = [
+      "⚠ This clothing item lacks natural, renewable, or certified sustainable fibers and relies heavily on industrially processed materials. These materials are often produced using water-intensive, chemically intensive methods that deplete ecosystems and harm biodiversity. Additionally, the absence of transparency about sourcing and processing further reduces confidence in its environmental integrity.",
+      "⚠ The garment is manufactured primarily from virgin synthetic materials, which require significant energy input and fossil fuel extraction. This results in a disproportionately high carbon footprint, from production to post-consumer disposal. Without any recycled content or biodegradable alternatives, this material choice undermines global efforts to decarbonize the fashion supply chain.",
+      "⚠ This item contains a high proportion of synthetic fibers, which are derived from non-renewable petroleum sources. These materials are not biodegradable and can persist in the environment for hundreds of years, contributing to long-term ecological harm and microplastic contamination in marine and terrestrial ecosystems.",
+      "⚠ The fabric composition includes a complex blend of synthetic and natural fibers, making it difficult to separate and recycle effectively. Such hybrid materials often bypass recycling systems entirely and end up in landfills or incinerators, where they either release harmful toxins or contribute to greenhouse gas emissions. This design choice directly hinders the development of a circular economy in fashion."
+    ];
+
+    function calculateSustainabilityScore(materials) {
+      let totalScore = 0;
+      let totalWeight = 0;
+      materials.forEach(material => {
+        const score = materialScores[material.toLowerCase()] || 0;
+        totalScore += score;
+        totalWeight += 1;
+      });
+      return totalWeight === 0 ? 0 : Math.round(Math.min(100, totalScore / totalWeight));
+    }
+
+    function parseMaterials(materialText) {
+      return materialText.toLowerCase().replace(/\d+%/g, '').split(',').map(m => m.trim()).filter(Boolean);
+    }
+
+    function getSustainabilityDescription(score) {
+      if (score >= 80) return '<span class="highlight">Very sustainable</span>. Excellent choice with eco-friendly fabrics!';
+      if (score >= 60) return '<span class="highlight">Moderately sustainable</span>. Great work! Consider increasing the use of natural fibers.';
+      return '<span class="highlight">Needs improvement</span>. Explore more sustainable options such as organic cotton or hemp.';
+    }
+
+    function getRandomMaterial() {
+      const samples = [
+        '100% Cotton',
+        '60% Recycled Polyester, 40% Cotton',
+        '55% Viscose, 45% Nylon',
+        '80% Organic Cotton, 20% Hemp',
+        '90% Polyester, 10% Elastane'
+      ];
+      return samples[Math.floor(Math.random() * samples.length)];
+    }
+
+    function renderItems() {
+      const container = document.getElementById('wardrobeItems');
+      container.innerHTML = '';
+      if (items.length === 0) {
+        container.innerHTML = '<p style="margin-top: 2rem; font-size: 1.1rem; color: #a25b7c;">Your wardrobe is currently empty — upload items and come back!</p>';
+        document.getElementById('avgScore').textContent = '';
+        document.getElementById('progressBar').style.width = '0%';
+        return;
+      }
+
+      let totalScore = 0;
+
+      items.forEach((item, index) => {
+        if (!item.material || item.material === 'Other') {
+          item.material = getRandomMaterial();
+          localStorage.setItem('wardrobeItems', JSON.stringify(items));
+        }
+
+        let materialText = item.material;
+        let parsedMaterials = parseMaterials(materialText);
+        let score = calculateSustainabilityScore(parsedMaterials);
+        totalScore += score;
+
+        const cardClass = score >= 60 ? 'card green' : 'card low-score';
+        const warningMessage = warningMessages[index % warningMessages.length];
+
+        const card = document.createElement('div');
+        card.className = cardClass;
+        card.innerHTML = `
+          <button class="delete-btn" onclick="deleteItem(${index})">&times;</button>
+          <img src="${item.image}" alt="Clothing image" onerror="this.style.display='none'" />
+          <div><span class="label">Category:</span>
+            <select class="category-select" onchange="items[${index}].category = this.value; localStorage.setItem('wardrobeItems', JSON.stringify(items))">
+              <option ${item.category === 'Top' ? 'selected' : ''}>Top</option>
+              <option ${item.category === 'Bottom' ? 'selected' : ''}>Bottom</option>
+              <option ${item.category === 'Shoes' ? 'selected' : ''}>Shoes</option>
+              <option ${item.category === 'Dress' ? 'selected' : ''}>Dress</option>
+              <option ${item.category === 'Jacket' ? 'selected' : ''}>Jacket</option>
+              <option ${item.category === 'Bag' ? 'selected' : ''}>Bag</option>
+              <option ${item.category === 'Accessory' ? 'selected' : ''}>Accessory</option>
+              <option ${item.category === 'Outerwear' ? 'selected' : ''}>Outerwear</option>
+              <option ${item.category === 'Underwear' ? 'selected' : ''}>Underwear</option>
+            </select>
+          </div>
+          <div><span class="label">Material:</span><span class="value"> ${materialText}</span></div>
+          <div><span class="label">Sustainability Score:</span><span class="value"> ${score}/100</span>
+            ${score < 60 ? `<span class="score-warning">⚠<span class="tooltip-text">${warningMessage}</span></span>` : ''}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      const avg = Math.round(totalScore / items.length);
+      document.getElementById('avgScore').innerHTML = `Average Sustainability Score: <span>${avg}/100</span><small>${getSustainabilityDescription(avg)}</small>`;
+      document.getElementById('progressBar').style.width = `${avg}%`;
+    }
+
+    function deleteItem(index) {
+      items.splice(index, 1);
+      localStorage.setItem('wardrobeItems', JSON.stringify(items));
+      renderItems();
+    }
+
+    renderItems();
+  </script>
+</body>
+</html>
