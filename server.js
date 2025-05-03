@@ -1,7 +1,10 @@
 const express = require('express');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const cors = require('cors');
 const path = require('path');
+
+puppeteer.use(StealthPlugin());
 
 const app = express();
 
@@ -33,7 +36,6 @@ app.get('/api/scrape', async (req, res) => {
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 20000 });
 
     const data = await page.evaluate(() => {
-      // 🎯 Look for image with alt text that contains "Article without model"
       const img = Array.from(document.querySelectorAll('img'))
         .find(img => img.alt?.includes('Article without model'));
 
@@ -55,7 +57,6 @@ app.get('/api/scrape', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
   console.log(`🚀 DressSmart server is running on port ${PORT}`);
 });
