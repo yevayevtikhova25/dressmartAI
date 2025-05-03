@@ -1,0 +1,9 @@
+{
+    "rewrites": [
+      {
+        "source": "/api/scrape",
+        "destination": "https://dressmartai-backend.onrender.com/api/scrape"
+      }
+    ]
+  }
+  
