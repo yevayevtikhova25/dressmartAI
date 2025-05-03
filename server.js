@@ -30,59 +30,31 @@ app.get('/api/scrape', async (req, res) => {
     const page = await browser.newPage();
     await page.setUserAgent('Mozilla/5.0');
 
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 15000 });
 
-    // Click the "Composition" tab to expand it
-    await page.evaluate(() => {
-      const tab = Array.from(document.querySelectorAll('button, span')).find(el =>
-        el.textContent?.toLowerCase().includes('composition')
-      );
-      if (tab) tab.click();
+    // Example: scrape title and a meta description
+    const data = await page.evaluate(() => {
+      const title = document.querySelector('title')?.innerText || '';
+      const description =
+        document.querySelector('meta[name="description"]')?.content || '';
+      return { title, description };
     });
 
-    // Short wait to allow the content to expand and render
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    const end = Date.now();
+    console.log(`✅ Scraping completed in ${end - start}ms`);
 
-    const result = await page.evaluate(() => {
-      const getImageSrc = img =>
-        img?.getAttribute('src') ||
-        img?.getAttribute('data-src') ||
-        (img?.getAttribute('srcset')?.split(' ')[0]) ||
-        '';
-
-      // Find the image with the alt text "Article without model"
-      const imgs = Array.from(document.querySelectorAll('img'));
-      const mainImg = imgs.find(img =>
-        img.alt?.toLowerCase().includes('article without model')
-      );
-
-      const image = getImageSrc(mainImg || imgs[0]);
-
-      // Returning only the image (no composition extraction)
-      return {
-        image
-      };
-    });
-
-    console.log('✅ Done in', (Date.now() - start) / 1000, 's');
-    console.log('🖼️ Image:', result.image);
-
-    if (!result.image) {
-      console.warn('⚠️ No image found.');
-      return res.status(404).json({ error: 'Image not found.' });
-    }
-
-    // Return only image data
-    res.json(result);
-  } catch (err) {
-    console.error('❌ Scraping failed:', err.stack || err.message || err);
-    res.status(500).json({ error: 'Failed to scrape', details: err.message });
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('❌ Scraping error:', error);
+    res.status(500).json({ error: 'Scraping failed' });
   } finally {
     if (browser) await browser.close();
   }
 });
 
-const PORT = 3000;
+// 🔥 This is what was missing!
+const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
-  console.log(`✅ Puppeteer scraping server running at http://localhost:${PORT}`);
+  console.log(`🚀 DressSmart server is running on port ${PORT}`);
 });
