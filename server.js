@@ -33,18 +33,17 @@ app.get('/api/scrape', async (req, res) => {
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 20000 });
 
     const data = await page.evaluate(() => {
-      const image = document.querySelector('[data-test-id="product-detail-carousel"] img')?.src || '';
-      const title = document.querySelector('h1')?.innerText || '';
+      // 🎯 Look for image with alt text that contains "Article without model"
+      const img = Array.from(document.querySelectorAll('img'))
+        .find(img => img.alt?.includes('Article without model'));
 
-      const compositionItem = Array.from(document.querySelectorAll('li'))
-        .find(el => el.textContent.includes('Composition:'));
-      const composition = compositionItem ? compositionItem.innerText : '';
-
-      return { title, image, composition };
+      const image = img?.src || '';
+      return { image };
     });
 
     const end = Date.now();
     console.log(`✅ Scraping completed in ${end - start}ms`);
+    console.log('📦 Scraped data:', data);
 
     res.json({ success: true, data });
   } catch (error) {
