@@ -1,0 +1,25 @@
+{
+  "name": "dressmartai",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yevayevtikhova25/dressmartAI.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yevayevtikhova25/dressmartAI/issues"
+  },
+  "homepage": "https://github.com/yevayevtikhova25/dressmartAI#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0",
+    "puppeteer": "^24.8.0"
+  }
+}
