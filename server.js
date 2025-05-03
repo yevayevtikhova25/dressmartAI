@@ -30,14 +30,17 @@ app.get('/api/scrape', async (req, res) => {
     const page = await browser.newPage();
     await page.setUserAgent('Mozilla/5.0');
 
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 15000 });
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 20000 });
 
-    // Example: scrape title and a meta description
     const data = await page.evaluate(() => {
-      const title = document.querySelector('title')?.innerText || '';
-      const description =
-        document.querySelector('meta[name="description"]')?.content || '';
-      return { title, description };
+      const image = document.querySelector('[data-test-id="product-detail-carousel"] img')?.src || '';
+      const title = document.querySelector('h1')?.innerText || '';
+
+      const compositionItem = Array.from(document.querySelectorAll('li'))
+        .find(el => el.textContent.includes('Composition:'));
+      const composition = compositionItem ? compositionItem.innerText : '';
+
+      return { title, image, composition };
     });
 
     const end = Date.now();
@@ -52,7 +55,6 @@ app.get('/api/scrape', async (req, res) => {
   }
 });
 
-// 🔥 This is what was missing!
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
