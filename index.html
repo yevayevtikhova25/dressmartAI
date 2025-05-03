@@ -11,7 +11,6 @@
       background-color: #fce4ec;
       color: #3b3b3b;
     }
-    
     header {
       display: flex;
       justify-content: space-between;
@@ -153,11 +152,11 @@
     const items = JSON.parse(localStorage.getItem('wardrobeItems')) || [];
 
     function fetchProductData(url) {
-      return fetch(`http://localhost:3000/api/scrape?url=${encodeURIComponent(url)}`)
+      return fetch(`https://dresssmartai-backend.onrender.com/api/scrape?url=${encodeURIComponent(url)}`)
         .then(res => res.json())
         .catch(err => {
           console.error("Failed to fetch product data", err);
-          return { image: '', materials: 'Unknown' };
+          return { success: false, data: { image: '', materials: 'Unknown' } };
         });
     }
 
@@ -189,16 +188,16 @@
       const scraped = await fetchProductData(url);
       console.log("✅ Scraped data:", scraped);
 
-      if (!scraped.image || !scraped.image.startsWith('http')) {
+      if (!scraped.success || !scraped.data.image || !scraped.data.image.startsWith('http')) {
         alert("⚠️ Couldn't extract a valid image from the link. Try a different one.");
         return;
       }
 
       const item = {
         category: ['Shoes', 'Dress', 'Jacket', 'Bag', 'Pants', 'Blouse', 'Jeans', 'Coat', 'T-Shirt', 'Jumpsuit', 'Blazer', 'Vest'][items.length % 9],
-        material: scraped.materials || 'Other',
-        sustainabilityScore: calculateSustainabilityScore(scraped.materials || ''),
-        image: scraped.image
+        material: scraped.data.materials || 'Other',
+        sustainabilityScore: calculateSustainabilityScore(scraped.data.materials || ''),
+        image: scraped.data.image
       };
 
       items.push(item);
